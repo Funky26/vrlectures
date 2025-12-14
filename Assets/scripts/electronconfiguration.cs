@@ -4,71 +4,70 @@ using UnityEngine;
 
 public class electronconfiguration : MonoBehaviour
 {
-    private int electrons =0;
-    private int protons =0;
-    private int neutrons=0;
+    private int electrons = 0;
+    private int protons = 0;
+    private int neutrons = 0;
 
     private bool stability = true;
 
+    [Header("UI")]
     public TextMeshProUGUI stabilityTxt;
     public TextMeshProUGUI neutronsTxt;
     public TextMeshProUGUI protonsTxt;
     public TextMeshProUGUI electronsTxt;
 
-    public bool addElectron = false;
-    public bool takeElectron = false;
-    public bool addProton = false;
-    public bool takeProton = false;
-    public bool addNeutron = false;
-    public bool takeNeutron = false;
-
+    [Header("Highlighter")]
     public GameObject highlighterObj;
 
+    [Header("Elements List")]
     public List<GameObject> element;
 
+    // --- PUBLIC GETTERS ---
     public int GetProtons() { return protons; }
     public int GetNeutrons() { return neutrons; }
     public int GetElectrons() { return electrons; }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    // --- PRIVATE INPUT FLAGS ---
+    private bool addElectron = false;
+    private bool takeElectron = false;
+    private bool addProton = false;
+    private bool takeProton = false;
+    private bool addNeutron = false;
+    private bool takeNeutron = false;
 
-    // Update is called once per frame
     void Update()
     {
-        // Update values
+        // Update particle amounts
         protons = particleCount(addProton, takeProton, protons, protonsTxt);
         neutrons = particleCount(addNeutron, takeNeutron, neutrons, neutronsTxt);
         electrons = particleCount(addElectron, takeElectron, electrons, electronsTxt);
 
-        // Reset input triggers
+        // Reset flags each frame
         addProton = takeProton = false;
         addNeutron = takeNeutron = false;
         addElectron = takeElectron = false;
 
-        // Update stability
+        // Stability logic
         stability = !(neutrons - 1 == protons && neutrons > protons);
+        stabilityTxt.text = stability ? "Stable" : "Unstable";
 
-        // Highlight
+        // Move highlighter
         highlighter(highlighterObj);
+
+        Debug.Log("Neutrons: " + neutrons + "   Protons: "+protons+"    Electrons: "+electrons );
     }
+
+    // Increase/Decrease particle counts
     public int particleCount(bool give, bool take, int particleCount, TextMeshProUGUI particleText)
     {
-        if (give)
-        {
-            particleCount++;
-        }
-        if (take)
-        {
-            particleCount--;
-        }
+        if (give) particleCount++;
+        if (take) particleCount--;
+
         particleText.text = particleCount.ToString();
         return particleCount;
     }
 
+    // Highlight current element
     public void highlighter(GameObject highlighter)
     {
         if (protons <= 0 || protons > element.Count) return;
@@ -76,4 +75,13 @@ public class electronconfiguration : MonoBehaviour
         element[protons - 1].transform.position = highlighter.transform.position;
     }
 
+    // --- PUBLIC FUNCTIONS FOR BUTTONS ---
+    public void AddElectron() { addElectron = true; }
+    public void TakeElectron() { takeElectron = true; }
+
+    public void AddProton() { addProton = true; }
+    public void TakeProton() { takeProton = true; }
+
+    public void AddNeutron() { addNeutron = true; }
+    public void TakeNeutron() { takeNeutron = true; }
 }

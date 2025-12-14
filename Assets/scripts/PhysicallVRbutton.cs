@@ -1,16 +1,19 @@
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 public class ButtonVR : MonoBehaviour
 {
-    public GameObject button;
+    public GameObject button;             // The moving part
     public UnityEvent onPress;
     public UnityEvent onRelease;
 
-    GameObject presser;
-    AudioSource sound;
-    bool isPressed;
+    private Collider presser;
+    private AudioSource sound;
+    private bool isPressed;
+
+    // Button positions
+    private Vector3 upPos = new Vector3(0, 0.015f, 0);
+    private Vector3 downPos = new Vector3(0, 0.003f, 0);
 
     void Start()
     {
@@ -20,31 +23,42 @@ public class ButtonVR : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isPressed)
-        {
-            button.transform.localPosition = new Vector3(0, 0.003f, 0);
-            presser = other.gameObject;
-            onPress.Invoke();
-            sound.Play();
-            isPressed = true;
-        }
+        if (isPressed) return;
+
+        presser = other;
+        button.transform.localPosition = downPos;
+        onPress.Invoke();
+        if (sound) sound.Play();
+        isPressed = true;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other == presser)
+        // Ignore stray exits
+        if (other != presser) return;
+
+        ReleaseButton();
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        // If something else enters or hand stays inside — fine.
+        // BUT if the presser is null or disabled → release
+        if (isPressed && presser != null)
         {
-            button.transform.localPosition = new Vector3(0, 0.015f, 0);
-            onRelease.Invoke();
-            isPressed = false;
+            // If the presser collider is no longer really touching
+            if (!other.bounds.Intersects(GetComponent<Collider>().bounds))
+            {
+                ReleaseButton();
+            }
         }
     }
 
-    public void SpawnSphere()
+    private void ReleaseButton()
     {
-        GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-        sphere.transform.localPosition = new Vector3(0, 1, 2);
-        sphere.AddComponent<Rigidbody>();
+        button.transform.localPosition = upPos;
+        onRelease.Invoke();
+        isPressed = false;
+        presser = null;
     }
 }
