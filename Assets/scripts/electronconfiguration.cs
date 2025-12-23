@@ -63,6 +63,11 @@ public class electronconfiguration : MonoBehaviour
         if (give) particleCount++;
         if (take) particleCount--;
 
+        if (particleCount <= 0)
+        {
+            particleCount = 0;
+        }
+
         particleText.text = particleCount.ToString();
         return particleCount;
     }
