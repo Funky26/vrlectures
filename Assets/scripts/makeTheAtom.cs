@@ -14,65 +14,91 @@ public class makeTheAtom : MonoBehaviour
 
     public TextMeshProUGUI makeThisElementTxt;
     public TextMeshProUGUI timerText;
+    public TextMeshProUGUI challengeFinishedText;
+
+    public GameObject makeAtomUI;
+
+    public AudioSource correctAudio;
+    public AudioSource inccorrectAudio;
+
+    private bool challengeRunning = false;
 
     void Start()
     {
-        //button
-        StartChallenge();
+
+        challengeFinishedText.text = string.Empty;
+        makeAtomUI.SetActive(false);
     }
 
     void Update()
     {
-        // Countdown timer
-        timer -= Time.deltaTime;
-        timerText.text = timer.ToString();
+        if (!challengeRunning)
+            return;
 
-        if (timer<=0)
+        timer -= Time.deltaTime;
+        timerText.text = timer.ToString("F1");
+
+        if (timer <= 0f)
+        {
+            EndOfChallenge();
+            return;
+        }
+
+        if (PlayerMadeCorrectAtom())
+        {
+            EndOfChallenge();
+        }
+    }
+    void StartTime()
+    {
+        timer += Time.deltaTime;
+
+        timerText.text = timer.ToString("F1"); // 1 decimal place
+
+        if (timer >= challengeTime)
         {
             Debug.Log("⏳ Time's up! You failed.");
-            endOfChallenge();
+            EndOfChallenge();
         }
     }
 
 
     //put it on an end button
-    void endOfChallenge()
+    void EndOfChallenge()
     {
-        if (timer <= 0f)
-        {
-            Debug.Log("⏳ Time's up! You failed.");
-            StartChallenge();   // start new challenge
-        }
+        challengeRunning = false;
 
-
-
-        // Check if the player created the correct atom
         if (PlayerMadeCorrectAtom())
         {
-            Debug.Log("✔ Correct atom created!");
+            challengeFinishedText.text = "✔ Correct atom created!";
+            correctAudio.Play();
         }
-        else if (!PlayerMadeCorrectAtom())
+        else
         {
-            Debug.Log("You have done it incorrectly. Try again");
+            challengeFinishedText.text = "Try again";
+            inccorrectAudio.Play();
         }
+
+        makeAtomUI.SetActive(false);
     }
 
-    void StartChallenge()
+    public void StartChallenge()
     {
-        // Pick random element index
-        int index = Random.Range(0, 21);
-        GameObject elementObj = config.element[index];
-        elementName = elementObj.name;  
+        challengeFinishedText.text = string.Empty;
+        makeAtomUI.SetActive(true);
 
-        // Example: proton number is just index+1
+        int index = Random.Range(0, 17);
+        GameObject elementObj = config.element[index];
+        elementName = elementObj.name;
+
         targetProtons = index + 1;
         targetNeutrons = targetProtons;
-        targetElectrons = targetProtons; // assume neutral atom
+        targetElectrons = targetProtons;
 
-        Debug.Log($"Make this element: "+elementName);
-        makeThisElementTxt.text = $"Make this element: " + elementName;
+        makeThisElementTxt.text = elementName;
 
         timer = challengeTime;
+        challengeRunning = true;
     }
 
     bool PlayerMadeCorrectAtom()

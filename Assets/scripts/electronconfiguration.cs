@@ -48,7 +48,7 @@ public class electronconfiguration : MonoBehaviour
         addElectron = takeElectron = false;
 
         // Stability logic
-        stability = !(neutrons - 1 == protons && neutrons > protons);
+        stability = IsStable(protons, neutrons);
         stabilityTxt.text = stability ? "Stable" : "Unstable";
 
         // Move highlighter
@@ -75,9 +75,29 @@ public class electronconfiguration : MonoBehaviour
     // Highlight current element
     public void highlighter(GameObject highlighter)
     {
-        if (protons <= 0 || protons > element.Count) return;
+        if (protons <= 0 || protons > element.Count)
+        {
+            highlighter.SetActive(false);
+            return;
+        }
 
-        element[protons - 1].transform.position = highlighter.transform.position;
+        highlighter.SetActive(true);
+        highlighter.transform.position =
+            element[protons - 1].transform.position;
+    }
+    bool IsStable(int protons, int neutrons)
+    {
+        if (protons == 0) return false;
+
+        // Light elements
+        if (protons <= 20)
+        {
+            return Mathf.Abs(neutrons - protons) <= 1;
+        }
+
+        // Heavy elements
+        float ratio = (float)neutrons / protons;
+        return ratio >= 1.0f && ratio <= 1.5f;
     }
 
     // --- PUBLIC FUNCTIONS FOR BUTTONS ---
